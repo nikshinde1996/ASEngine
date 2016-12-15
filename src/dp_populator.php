@@ -39,24 +39,42 @@
     }
 
     $myfile = fopen("/var/www/html/pop.php","r") or die("Unable to loop url page!");
-   // echo fgets($myfile);
 
+    $lines = file("$url");
 
-    while($buf=fgets($fd,1024)){
-       $buf = trim($buf);
-       $buf = strip_tags($buf);
-       $buf = ereg_replace('/&\w;/','',$buf);
-       preg_match_all("/(\b[\w+]+\b)/",$buf,$words);
- 
-       for($i=0;$words[$i];$i++){
-          for($j=0;$words[$i][$j];$j++){
-               $cur_word = addslashes(strtolower($words[$i][$j]) );
-               echo "$cur_word"."<br>";
-          }
-       }   
+    // Loop through our array, show HTML source as HTML source; and line numbers too.
+    foreach ($lines as $line_num => $line) {
+        $line = trim($line);
+        $line = strip_tags($line);
+        $line = trim($line);
+        $line = preg_replace('/&\w;/', '', $line);
+        preg_match_all("/(\b[\w+]+\b)/",$line,$words);
 
+        for( $i = 0; $words[$i]; $i++ ){
+            for( $j = 0; $words[$i][$j]; $j++ ){
+              //  Does the current word already have a record in the word-table? 
+              $cur_word = addslashes( strtolower($words[$i][$j]) );
+              // echo "$cur_word<br>";
 
+              $sql2 = "SELECT word_id FROM word WHERE word_word = '$cur_word'";
+              $res = $conn->query(sql2);
+
+              if ($res->num_rows > 0) {
+                  while($row = $res->fetch_assoc()) {
+                      $page_id = $row["word_id"]; 
+                    //  echo "Present page_id = $page_id";
+                  }
+              }else{
+    	          $conn->query("INSERT INTO word (word_word) VALUES (\"$cur_word\")");
+    	          $word_id = $conn->insert_id;
+              }
+
+              $sql3 = $conn->query("INSERT INTO occurence (word_id,page_id) VALUES ($word_id,$page_id)");
+              echo "Indexing: $cur_word <br>";
+            }
+        } 
     }
- 
+
+    fclose($myfile);
 
 ?>
