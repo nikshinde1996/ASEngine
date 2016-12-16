@@ -15,46 +15,51 @@
 
         if($_POST['keyword']){
         	
-        	$servername = "localhost";
-			$username = "root";
-			$password = "nikhil20#";
-			$dbname = "ASengine";
+        $servername = "localhost";
+			  $username = "root";
+			  $password = "nikhil20#";
+			  $dbname = "ASengine";
 
-			// Create connection
-			$conn = new mysqli($servername, $username, $password, $dbname);
-			// Check connection
-			if ($conn->connect_error) {
-    			die("Connection failed: " . $conn->connect_error);
-			}else{
-				echo "Connection established !<br>";
-			} 
+			  // Create connection
+			  $conn = new mysqli($servername, $username, $password, $dbname);
+			  // Check connection
+			  if ($conn->connect_error) {
+    		  	die("Connection failed: " . $conn->connect_error);
+			  } 
 
-            $starttime = gettime(); 
+          $starttime = gettime(); 
         	
-        	$keyword = addslashes($_POST['$keyword']);
-            $result = addslashes($_POST['$result']);
+        	$keyword = addslashes($_POST['keyword']);
+          $result = addslashes($_POST['result']);
         	
-        	$result = $conn->query(" SELECT p.page_url AS url,
-                           COUNT(*) AS occurences 
-                           FROM page p, word w, occurence o
-                           WHERE p.page_id = o.page_id AND
-                           w.word_id = o.word_id AND
-                           w.word_word = \"$keyword\"
-                           GROUP BY p.page_id
-                           ORDER BY occurences DESC
-                           LIMIT $results" );
+          $keyword = mysql_real_escape_string($keyword);
 
-            $endtime = gettime();
+          $sql = "select p.page_url as url,
+                  count(*) as occ 
+                  from page p, word w,occurence o where p.page_id = o.page_id and w.word_id = o.word_id and w.word_word='{$_POST['keyword']}'
+                  group by p.page_id
+                  order by occ desc ";
 
-            print "<h2>Search results for '".$_POST['keyword']."':</h2>\n";
-   			for( $i = 1; $row = mysql_fetch_array($result); $i++ ){
-      			print "$i. <a href='".$row['url']."'>".$row['url']."</a>\n";
-      			print "(occurrences: ".$row['occurrences'].")<br><br>\n";
-   			}
+          
+          $result = $conn->query($sql);
+          $endtime = gettime();
 
-   			/* Present how long it took the execute the query: */
-   			print "query executed in ".(substr($end_time-$start_time,0,5))." seconds.";
-            
+          print "<h2>Search results for '".$_POST['keyword']."':</h2>\n";
+        
+        	if ($result->num_rows > 0) {
+               // output data of each row
+               while($row = $result->fetch_assoc()) {
+                  print "$i. <a href='".$row['url']."'>".$row['url']."</a>\n";
+                  print "(occurences: ".$row['occ'].")<br><br>\n";
+               }
+
+          }else{
+               echo "0 results<br>";
+          } 
+
+          print "<br>query executed in ".(substr($end_time-$start_time,0,5))." seconds.";
+
+          $conn->close();            
         }else{
             print "<form method='post'> Keyword: 
                 <input type='text' size='20' name='keyword'>\n";
