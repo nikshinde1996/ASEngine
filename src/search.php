@@ -17,7 +17,7 @@
         	
         $servername = "localhost";
 			  $username = "root";
-			  $password = "nikhil20#";
+			  $password = "holyshit";
 			  $dbname = "ASengine";
 
 			  // Create connection
@@ -32,11 +32,10 @@
         	$keyword = addslashes($_POST['keyword']);
           $result = addslashes($_POST['result']);
         	
-          $keyword = mysql_real_escape_string($keyword);
 
           $sql = "select p.page_url as url,
                   count(*) as occ 
-                  from page p, word w,occurence o where p.page_id = o.page_id and w.word_id = o.word_id and w.word_word='{$_POST['keyword']}'
+                  from page p, word w,occurence o where p.page_id = o.page_id and w.word_id = o.word_id and w.word_word='".$keyword."'
                   group by p.page_id
                   order by occ desc ";
 
@@ -52,21 +51,22 @@
                   print "$i. <a href='".$row['url']."'>".$row['url']."</a>\n";
                   print "(occurences: ".$row['occ'].")<br><br>\n";
                }
-
+               echo "</table>";
           }else{
-               echo "0 results<br>";
+               echo "0 results";
           } 
 
           print "<br>query executed in ".(substr($end_time-$start_time,0,5))." seconds.";
 
           $conn->close();            
         }else{
-            print "<form method='post'> Keyword: 
-                <input type='text' size='20' name='keyword'>\n";
+            print "<img src='../res/im1.gif' width='300px' height='300px' style='padding:3%;padding-left:40%;'>";
+            print "<form method='post' action=\"?\" style='padding-left:25%;'> Keyword: 
+                <input type='text' size='50' name='keyword' style='padding-left:4%;'>\n";
             print "Results: <select name='results'><option value='5'>5</option>\n";
             print "<option value='10'>10</option><option value='15'>15</option>\n";
             print "<option value='20'>20</option></select>\n";
-            print "<input type='submit' value='Search'></form>\n";
+            print "<input type='submit' value='Search'></form>\n</div>";
         }
 
         
